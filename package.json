@@ -1,0 +1,30 @@
+{
+  "name": "meal-planner",
+  "version": "1.0.0",
+  "description": "plan for recipe, meal , menu and grocery list",
+  "main": "index.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luckyrantanplan/meal-planner.git"
+  },
+  "keywords": [
+    "meal",
+    "planner",
+    "recipes",
+    "cooking"
+  ],
+  "author": "Florian Prud'homme",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/luckyrantanplan/meal-planner/issues"
+  },
+  "homepage": "https://github.com/luckyrantanplan/meal-planner#readme",
+  "dependencies": {
+    "eslint": "^6.7.2",
+    "neo4j-driver": "^1.7.6",
+    "request": "^2.88.0"
+  }
+}
