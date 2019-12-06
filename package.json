@@ -25,6 +25,8 @@
   "dependencies": {
     "eslint": "^6.7.2",
     "neo4j-driver": "^1.7.6",
-    "request": "^2.88.0"
+    "node-expat": "^2.3.18",
+    "request": "^2.88.0",
+    "string-similarity": "^3.0.0"
   }
 }
