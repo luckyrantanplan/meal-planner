@@ -113,7 +113,6 @@ async function main() {
         for (const rayon of col.rayons) {
             const newele = getRayonComponent(rayon.components, rayon.title);
             for (const item of newele) {
-
                 courseIngredients.push(item);
             }
         }
@@ -176,7 +175,7 @@ function createDict() {
 
     const expat = require('node-expat')
     const fs = require('fs');
-
+    const zlib = require('zlib');
     const p = expat.createParser();
     let startTags = 0;
     let endTags = 0;
@@ -216,8 +215,10 @@ function createDict() {
         if (name === "entry") {
             toBeCaptured = false;
             if (oneLemme.hasOwnProperty('singular')) {
-                lemmes[oneLemme.plural] = oneLemme.singular;
-            } else {
+                if (oneLemme.plural !== oneLemme.singular) {
+                    lemmes[oneLemme.plural] = oneLemme.singular;
+                }
+            } else if (oneLemme.plural !== lemmaCurrent) {
                 lemmes[oneLemme.plural] = lemmaCurrent;
             }
             oneLemme = {};
@@ -256,8 +257,8 @@ function createDict() {
 
 
 
-    const xmlData = fs.createReadStream('dela-fr-public-u8.dic.xml', { encoding: 'utf8' });
-    xmlData.pipe(p);
+    const xmlData = fs.createReadStream('dela-fr-public-u8.dic.xml.gz');
+    xmlData.pipe(zlib.createGunzip()).pipe(p);
 
 
     console.log("end");
@@ -279,8 +280,8 @@ function normalizeName(s) {
 }
 
 
-
-main().catch(e => console.error(e));
+createDict();
+//main().catch(e => console.error(e));
 
 
 function getMeasure(quantity) {
