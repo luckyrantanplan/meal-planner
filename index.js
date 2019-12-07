@@ -7,6 +7,8 @@ const request = require('request');
 const stringSimilarity = require('string-similarity');
 
 const NUMERIC_REGEXP = /[-]{0,1}[\d]*[.]{0,1}[\d]+/g;
+
+
 function requestPromise(options) {
 
     return new Promise((callback, reject) => {
@@ -125,8 +127,12 @@ async function main() {
     const menus = [];
     for (const day of days) {
         menus.push({
-            midi: getRecettes(day.midi.recettes, ingrFinder),
-            soir: getRecettes(day.soir.recettes, ingrFinder),
+            recettes: getRecettes(day.midi.recettes, ingrFinder),
+            mealTime: day.midi.midi_soir
+        });
+        menus.push({
+            recettes: getRecettes(day.soir.recettes, ingrFinder),
+            mealTime: day.soir.midi_soir
         });
     }
     // join courses and menus to determine equivalence between gram and custom unit
@@ -134,137 +140,52 @@ async function main() {
     const AllIngredient = {};
 
     for (const menu of menus) {
-        getAllIngredientFromMenu(menu.midi, AllIngredient);
-        getAllIngredientFromMenu(menu.soir, AllIngredient);
+
+        for (const recette of menu.recettes) {
+            for (const ingredient of recette.ingredients) {
+                if (!AllIngredient[ingredient.name]) {
+                    AllIngredient[ingredient.name] = [];
+                }
+                mergeIngredients(AllIngredient, ingredient, recette.person_count);
+            }
+        }
     }
 
+    for (const ingredient of courseIngredients) {
+        if (AllIngredient.hasOwnProperty(ingredient.name)) {
+
+            const useIngredient = AllIngredient[ingredient.name];
+            const message = ` ${ingredient.name} ${ingredient.gram/person_count} g or  ${ingredient.quantity/person_count}  ${ingredient.unit} =  `;
+            const usage = [];
+            for (const item of useIngredient) {
+                usage.push(`${item.quantity} ${item.unit} `);
+            }
+            console.log(` ${message}  ${usage.join('+')} `);
+            //if (useIngredient.length!=1 || ingredient.unit !== useIngredient[0].unit) {
 
 
+            //}
+        }
+    }
     console.log(JSON.stringify(menus, null, 2));
 
 }
 
 
-function getAllIngredientFromMenu(menu, AllIngredient) {
-    for (const recettes of menu) {
-        for (const ingredient of recettes.ingredients) {
-            if (!AllIngredient[ingredient.name]) {
-                AllIngredient[ingredient.name] = [];
-            }
-            mergeIngredients(AllIngredient, ingredient, recettes.person_count);
-        }
-    }
-}
 
 function mergeIngredients(AllIngredient, ingredient, divisor) {
 
     for (const item of AllIngredient[ingredient.name]) {
         if (item.unit === ingredient.unit) {
-            item.quantity += 4 * ingredient.quantity / divisor;
+            item.quantity += ingredient.quantity / divisor;
             return;
         }
     }
     AllIngredient[ingredient.name].push({
         name: ingredient.name,
-        quantity: 4 * ingredient.quantity / divisor,
+        quantity: ingredient.quantity / divisor,
         unit: ingredient.unit
     });
-}
-
-function createDict() {
-
-    const expat = require('node-expat')
-    const fs = require('fs');
-    const zlib = require('zlib');
-    const p = expat.createParser();
-    let startTags = 0;
-    let endTags = 0;
-
-    let toBeCaptured = false;
-    let captureText = "";
-    const lemmes = {};
-
-    let featNumber = "";
-    let oneLemme = {};
-    let captureLemma = false;
-    let lemmaCurrent = "";
-    p.on('startElement', (name, attrs) => {
-
-        if (name === "lemma") {
-            captureLemma = true;
-        }
-
-        if (name === 'pos' && attrs.name && attrs.name === "noun") {
-            toBeCaptured = true;
-        } //<feat name='number' value='masculine'/>
-
-        if (name === 'feat' && attrs.name === 'number') {
-            featNumber = attrs.value;
-        }
-        startTags++;
-    });
-
-    p.on('endElement', (name) => {
-        if (name === "lemma") {
-            captureLemma = false;
-        }
-        if (toBeCaptured && name === "inflected") {
-
-            oneLemme[featNumber] = captureText;
-        }
-        if (name === "entry") {
-            toBeCaptured = false;
-            if (oneLemme.hasOwnProperty('singular')) {
-                if (oneLemme.plural !== oneLemme.singular) {
-                    lemmes[oneLemme.plural] = oneLemme.singular;
-                }
-            } else if (oneLemme.plural !== lemmaCurrent) {
-                lemmes[oneLemme.plural] = lemmaCurrent;
-            }
-            oneLemme = {};
-        }
-        endTags++;
-    });
-
-    p.on('text', function (text) {
-        if (captureLemma) {
-            lemmaCurrent = text.trim();
-        }
-        if (toBeCaptured && text.trim() !== "") {
-            if (/^[A-Za-zÀ-ÖØ-öø-ÿ]+$/.test(text.trim())) {
-                captureText = text.trim();
-            } else {
-                toBeCaptured = false;
-            }
-
-        }
-
-    });
-
-    p.on('end', () => {
-        fs.writeFileSync('./dico.json', JSON.stringify(lemmes, null, 0));
-        console.log('ended');
-    });
-    p.on('close', () => {
-
-        console.log('closed');
-
-    });
-    p.on('error', function (error) {
-        assert.fail('Error', error);
-    });
-
-
-
-
-    const xmlData = fs.createReadStream('dela-fr-public-u8.dic.xml.gz');
-    xmlData.pipe(zlib.createGunzip()).pipe(p);
-
-
-    console.log("end");
-
-
-
 }
 
 const dicoPlurals = require('./dico.json');
@@ -280,8 +201,8 @@ function normalizeName(s) {
 }
 
 
-createDict();
-//main().catch(e => console.error(e));
+//createDict();
+main().catch(e => console.error(e));
 
 
 function getMeasure(quantity) {
