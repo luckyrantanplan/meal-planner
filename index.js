@@ -67,6 +67,25 @@ async function addPerson() {
 }
 
 
+class IngredientFinder {
+
+    constructor(courseIngredients) {
+        this.allIngredientName = courseIngredients.map(e => e.name);
+        this.ingredientSet = new Set(this.allIngredientName);
+    }
+
+    find(ingredient) {
+        if (this.ingredientSet.has(ingredient)) {
+            return ingredient;
+        }
+        console.log(`ingredient ${ingredient} not found , try to find equivalent`);
+        const matches = stringSimilarity.findBestMatch(ingredient, this.allIngredientName);
+        console.log(JSON.stringify(matches.bestMatch));
+
+        return matches.bestMatch.target;
+    }
+
+}
 
 async function main() {
 
@@ -77,32 +96,40 @@ async function main() {
     const example = JSON.parse(require('./exampleMenu').body);
 
     const person_count = Number(example['#data'][0].set['root.current_week'].week_parameters.person_count);
+
+    const courses = example['#data'][0].set['root.current_week'].courses;
+    const courseIngredients = courses.condiments.split(/\s*,\s*/).map(e => {
+        return {
+            name: normalizeName(e),
+            rayon: "condiments"
+        };
+    });
+    courseIngredients.push({
+        name: 'pain',
+        rayon: "condiments"
+    });
+
+    for (const col of courses.columns) {
+        for (const rayon of col.rayons) {
+            const newele = getRayonComponent(rayon.components, rayon.title);
+            for (const item of newele) {
+
+                courseIngredients.push(item);
+            }
+        }
+    }
+
+
+    const ingrFinder = new IngredientFinder(courseIngredients);
+
     const days = example['#data'][0].set['root.current_week'].days;
     const menus = [];
     for (const day of days) {
         menus.push({
-            midi: getRecettes(day.midi.recettes),
-            soir: getRecettes(day.soir.recettes),
+            midi: getRecettes(day.midi.recettes, ingrFinder),
+            soir: getRecettes(day.soir.recettes, ingrFinder),
         });
     }
-
-    const courses = example['#data'][0].set['root.current_week'].courses;
-    const courseIngredients = {
-        condiments: courses.condiments.split(/\s*,\s*/).map(e => {
-            return {
-                name: normalizeName(e),
-                rayon: "condiments"
-            };
-        })
-    };
-
-
-    for (const col of courses.columns) {
-        for (const rayon of col.rayons) {
-            courseIngredients[rayon.title] = getRayonComponent(rayon.components, rayon.title);
-        }
-    }
-
     // join courses and menus to determine equivalence between gram and custom unit
 
     const AllIngredient = {};
@@ -112,57 +139,7 @@ async function main() {
         getAllIngredientFromMenu(menu.soir, AllIngredient);
     }
 
-    const extraCourses = [];
 
-    for (const rayon in courseIngredients) {
-        for (const ingredient of courseIngredients[rayon]) {
-            if (AllIngredient.hasOwnProperty(ingredient.name)) {
-                AllIngredient[ingredient.name].push(ingredient);
-            } else {
-                extraCourses.push(ingredient);
-                console.log(ingredient.name + " is not in recipes !");
-            }
-
-        }
-    }
-
-    let extraMenu = [];
-    for (const ingredient in AllIngredient) {
-        let isCourseOK = false;
-        for (const item of AllIngredient[ingredient]) {
-            if (item.rayon) {
-                isCourseOK = true;
-            }
-        }
-        if (!isCourseOK) {
-            extraMenu.push(ingredient);
-        }
-    }
-
-    for (ingredient of extraCourses) {
-        const matches = stringSimilarity.findBestMatch(ingredient.name, extraMenu);
-        console.log(matches.bestMatch);
-
-        if (matches.bestMatch.rating > 0.5) {
-            AllIngredient[matches.bestMatch.target].push(ingredient);
-        }
-        extraMenu = extraMenu.filter((value, index, arr) => {
-
-            return value !== matches.bestMatch.target;
-
-        });
-    }
-
-    let allNames = Object.keys(AllIngredient).filter(w => {
-
-        return !extraMenu.includes(w);
-    });
-
-    for (ingredient of extraMenu) {
-        const matches = stringSimilarity.findBestMatch(ingredient, allNames);
-        console.log(JSON.stringify(matches.bestMatch));
-
-    }
 
     console.log(JSON.stringify(menus, null, 2));
 
@@ -332,13 +309,13 @@ function getRayonComponent(components, rayon) {
 }
 
 
-function getIngredients(ingredientList) {
+function getIngredients(ingredientList, ingrFinder) {
     const items = [];
     for (const ing of ingredientList) {
         const tab = ing.split('&nbsp;');
 
         items.push({
-            name: normalizeName(tab[0]),
+            name: ingrFinder.find(normalizeName(tab[0])),
             quantity: Number(tab[1].match(NUMERIC_REGEXP)),
             unit: normalizeName(tab[2] || 'unité')
         })
@@ -346,12 +323,12 @@ function getIngredients(ingredientList) {
     return items;
 }
 
-function getRecettes(recettes) {
+function getRecettes(recettes, ingrFinder) {
     const items = [];
     for (const r of recettes) {
         items.push({
             id: r.nid,
-            ingredients: getIngredients(r.field_recipe_ingredients_list),
+            ingredients: getIngredients(r.field_recipe_ingredients_list, ingrFinder),
             person_count: r.field_recipe_person_count,
             type: r.field_recipe_type,
             instructions: r.field_recipe_description,
