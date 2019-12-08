@@ -137,43 +137,65 @@ async function main() {
     }
     // join courses and menus to determine equivalence between gram and custom unit
 
-    const AllIngredient = {};
+    const AllIngredientMenu = {};
 
     for (const menu of menus) {
 
         for (const recette of menu.recettes) {
             for (const ingredient of recette.ingredients) {
-                if (!AllIngredient[ingredient.name]) {
-                    AllIngredient[ingredient.name] = [];
+                if (!AllIngredientMenu[ingredient.name]) {
+                    AllIngredientMenu[ingredient.name] = [];
                 }
-                mergeIngredients(AllIngredient, ingredient, recette.person_count);
+                mergeIngredients(AllIngredientMenu, ingredient, recette.person_count);
             }
         }
     }
 
-    for (const ingredient of courseIngredients) {
-        if (AllIngredient.hasOwnProperty(ingredient.name)) {
+    const AllIngredient = [];
 
-            const useIngredient = AllIngredient[ingredient.name];
+    for (const ingredient of courseIngredients) {
+        if (AllIngredientMenu.hasOwnProperty(ingredient.name)) {
+
+            const newIngredient = {
+                name: ingredient.name,
+                rayon: ingredient.rayon,
+                units: []
+            }
+
+
+            const useIngredient = AllIngredientMenu[ingredient.name];
             const message = ` ${ingredient.name} ${ingredient.gram / person_count} g or ${ingredient.quantity / person_count} ${ingredient.unit} =  `;
             const usage = [];
+
+            if (ingredient.unit) {
+                const newMeasure = {
+                    name: ingredient.unit
+                };
+
+                if (ingredient.unit !== 'g' && ingredient.gram) {
+                    newMeasure.gramPerUnit = ingredient.gram / ingredient.quantity;
+                }
+                newIngredient.units.push(newMeasure);
+            }
+
             for (const item of useIngredient) {
                 usage.push(`${item.quantity} ${item.unit} `);
+                // todo : test if not already present in array
+                if (ingredient.unit !== item.unit) {
+                    newIngredient.units.push({ name: item.unit });
+                }
             }
             console.log(` ${message}  ${usage.join('+')} `);
-            if (ingredient.gram && ingredient.unit !== 'g') {
-                console.log(` gramme1 par ${ingredient.unit} de ${ingredient.name} = ${ingredient.gram / ingredient.quantity} `);
-            } else if (useIngredient.length === 1) {
-                if (ingredient.gram && useIngredient[0].unit !== 'g') {
-                    console.log(` gramme2 par ${useIngredient[0].unit} de ${ingredient.name} = ${(ingredient.gram/ person_count) / useIngredient[0].quantity} `);
+            if (useIngredient.length === 1) {
+                if (ingredient.gram && useIngredient[0].unit !== 'g' && ingredient.unit !== useIngredient[0].unit) {
+                    newIngredient.units[1].gramPerUnit = (ingredient.gram / person_count) / useIngredient[0].quantity;
+                    console.log(` gramme2 par ${useIngredient[0].unit} de ${ingredient.name} = ${newIngredient.units[1].gramPerUnit} `);
                 }
             } else {
                 console.log('it is complicated');
             }
-            //if (useIngredient.length!=1 || ingredient.unit !== useIngredient[0].unit) {
-
-
-            //}
+            AllIngredient.push(newIngredient);
+        
         }
     }
     console.log(JSON.stringify(menus, null, 2));
@@ -250,7 +272,7 @@ function getIngredients(ingredientList, ingrFinder) {
             quantity: Number(tab[1].match(NUMERIC_REGEXP)),
             unit: normalizeName(tab[2] || 'unité')
         });
-       
+
     }
     return items;
 }
