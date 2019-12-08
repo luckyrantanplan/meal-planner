@@ -155,12 +155,21 @@ async function main() {
         if (AllIngredient.hasOwnProperty(ingredient.name)) {
 
             const useIngredient = AllIngredient[ingredient.name];
-            const message = ` ${ingredient.name} ${ingredient.gram/person_count} g or  ${ingredient.quantity/person_count}  ${ingredient.unit} =  `;
+            const message = ` ${ingredient.name} ${ingredient.gram / person_count} g or ${ingredient.quantity / person_count} ${ingredient.unit} =  `;
             const usage = [];
             for (const item of useIngredient) {
                 usage.push(`${item.quantity} ${item.unit} `);
             }
             console.log(` ${message}  ${usage.join('+')} `);
+            if (ingredient.gram && ingredient.unit !== 'g') {
+                console.log(` gramme1 par ${ingredient.unit} de ${ingredient.name} = ${ingredient.gram / ingredient.quantity} `);
+            } else if (useIngredient.length === 1) {
+                if (ingredient.gram && useIngredient[0].unit !== 'g') {
+                    console.log(` gramme2 par ${useIngredient[0].unit} de ${ingredient.name} = ${(ingredient.gram/ person_count) / useIngredient[0].quantity} `);
+                }
+            } else {
+                console.log('it is complicated');
+            }
             //if (useIngredient.length!=1 || ingredient.unit !== useIngredient[0].unit) {
 
 
@@ -240,7 +249,8 @@ function getIngredients(ingredientList, ingrFinder) {
             name: ingrFinder.find(normalizeName(tab[0])),
             quantity: Number(tab[1].match(NUMERIC_REGEXP)),
             unit: normalizeName(tab[2] || 'unité')
-        })
+        });
+       
     }
     return items;
 }
