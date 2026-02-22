@@ -1,10 +1,16 @@
 {
   "name": "meal-planner",
-  "version": "1.0.0",
-  "description": "plan for recipe, meal , menu and grocery list",
-  "main": "index.js",
+  "version": "2.0.0",
+  "description": "Plan recipes, meals, weekly menus, and grocery lists with nutritional information",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "test.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint 'src/**/*.ts'",
+    "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",
@@ -14,7 +20,10 @@
     "meal",
     "planner",
     "recipes",
-    "cooking"
+    "cooking",
+    "grocery",
+    "nutrition",
+    "menu"
   ],
   "author": "Florian Prud'homme",
   "license": "GPL-3.0",
@@ -23,10 +32,15 @@
   },
   "homepage": "https://github.com/luckyrantanplan/meal-planner#readme",
   "dependencies": {
-    "eslint": "^6.7.2",
-    "neo4j-driver": "^1.7.6",
-    "node-expat": "^2.3.18",
-    "request": "^2.88.0",
-    "string-similarity": "^3.0.0"
+    "string-similarity": "^4.0.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "@types/string-similarity": "^4.0.2",
+    "@types/node": "^22.13.5",
+    "vitest": "^3.0.7",
+    "eslint": "^9.21.0",
+    "@eslint/js": "^9.21.0",
+    "typescript-eslint": "^8.25.0"
   }
 }
