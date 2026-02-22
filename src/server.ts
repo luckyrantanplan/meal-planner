@@ -111,7 +111,7 @@ app.post('/api/ingredients', (req, res) => {
 
 // Serve frontend for any non-API route
 app.get('*', (_req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'web', 'index.html'));
+  res.redirect('/');
 });
 
 if (require.main === module) {
