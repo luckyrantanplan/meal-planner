@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍽️ Meal Planner</title>
+  <style>
+    :root {
+      --primary: #2d6a4f;
+      --primary-light: #40916c;
+      --primary-bg: #d8f3dc;
+      --accent: #e76f51;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #212529;
+      --text-muted: #6c757d;
+      --border: #dee2e6;
+      --radius: 8px;
+      --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    header h1 { font-size: 1.5rem; font-weight: 600; }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+    }
+
+    nav button {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    nav button:hover, nav button.active {
+      background: rgba(255,255,255,0.3);
+    }
+
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary-bg);
+      padding-bottom: 0.5rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.2rem;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-family: inherit;
+    }
+
+    .btn:hover { opacity: 0.85; }
+
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+    .btn-danger { background: #dc3545; color: white; }
+
+    .ingredient-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .ingredient-row input {
+      padding: 0.4rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+    }
+
+    .recipe-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+      background: var(--bg);
+    }
+
+    .recipe-card .recipe-info { flex: 1; }
+    .recipe-card .recipe-title { font-weight: 600; }
+    .recipe-card .recipe-meta { font-size: 0.8rem; color: var(--text-muted); }
+
+    .day-plan {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .day-plan-header {
+      background: var(--primary-bg);
+      padding: 0.6rem 1rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .meal-slot {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .meal-slot label { font-weight: 500; min-width: 70px; }
+    .meal-slot select { flex: 1; padding: 0.4rem; border-radius: var(--radius); border: 1px solid var(--border); }
+
+    .shopping-list { white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.9rem; }
+
+    .empty-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 3rem;
+      font-size: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--primary-bg);
+      color: var(--primary);
+    }
+
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .ingredient-row { grid-template-columns: 1fr 1fr; }
+      nav { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span style="font-size:1.8rem">🍽️</span>
+    <h1>Meal Planner</h1>
+    <nav>
+      <button class="active" onclick="showTab('recipes')">📖 Recipes</button>
+      <button onclick="showTab('planner')">📅 Meal Plan</button>
+      <button onclick="showTab('shopping')">🛒 Shopping List</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- RECIPES TAB -->
+    <div id="tab-recipes" class="tab-content active">
+      <div class="card">
+        <h2>➕ Add Recipe</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="recipe-title">Title</label>
+            <input type="text" id="recipe-title" placeholder="e.g., Gratin dauphinois">
+          </div>
+          <div class="form-group">
+            <label for="recipe-type">Type</label>
+            <select id="recipe-type">
+              <option value="entrée">Entrée</option>
+              <option value="plat" selected>Plat</option>
+              <option value="dessert">Dessert</option>
+              <option value="accompagnement">Accompagnement</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="recipe-servings">Servings</label>
+            <input type="number" id="recipe-servings" value="4" min="1">
+          </div>
+          <div></div>
+        </div>
+        <div class="form-group">
+          <label>Ingredients</label>
+          <div id="ingredients-list">
+            <div class="ingredient-row">
+              <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+              <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+              <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
+              <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline" onclick="addIngredientRow()" style="margin-top:0.5rem">+ Add ingredient</button>
+        </div>
+        <div class="form-group">
+          <label for="recipe-instructions">Instructions</label>
+          <textarea id="recipe-instructions" placeholder="Preparation steps..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveRecipe()">💾 Save Recipe</button>
+      </div>
+
+      <div class="card">
+        <h2>📖 My Recipes</h2>
+        <div id="recipes-container">
+          <div class="empty-state">No recipes yet. Add one above!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEAL PLAN TAB -->
+    <div id="tab-planner" class="tab-content">
+      <div class="card">
+        <h2>📅 Weekly Meal Plan</h2>
+        <div class="form-group" style="max-width:200px;margin-bottom:1rem">
+          <label for="plan-servings">Servings</label>
+          <input type="number" id="plan-servings" value="4" min="1">
+        </div>
+        <div id="planner-days"></div>
+        <button class="btn btn-primary" onclick="generatePlan()" style="margin-top:1rem">📋 Create Plan</button>
+      </div>
+      <div class="card" id="plan-result-card" style="display:none">
+        <h2>✅ Current Plan</h2>
+        <div id="plan-result"></div>
+      </div>
+    </div>
+
+    <!-- SHOPPING LIST TAB -->
+    <div id="tab-shopping" class="tab-content">
+      <div class="card">
+        <h2>🛒 Shopping List</h2>
+        <p style="color:var(--text-muted);margin-bottom:1rem">Generate a shopping list from your current meal plan.</p>
+        <button class="btn btn-accent" onclick="generateShoppingList()">🛒 Generate Shopping List</button>
+        <div id="shopping-result" style="margin-top:1.5rem"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // --- State ---
+    let recipes = [];
+    let currentPlan = null;
+
+    const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    // --- Tab navigation ---
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      const buttons = document.querySelectorAll('nav button');
+      const tabMap = { recipes: 0, planner: 1, shopping: 2 };
+      buttons[tabMap[tabName]].classList.add('active');
+
+      if (tabName === 'planner') renderPlanner();
+    }
+
+    // --- Ingredient rows ---
+    function addIngredientRow() {
+      const container = document.getElementById('ingredients-list');
+      const row = document.createElement('div');
+      row.className = 'ingredient-row';
+      row.innerHTML = `
+        <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+        <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+        <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
+        <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function removeIngredientRow(btn) {
+      const container = document.getElementById('ingredients-list');
+      if (container.children.length > 1) {
+        btn.closest('.ingredient-row').remove();
+      }
+    }
+
+    // --- Recipes ---
+    function saveRecipe() {
+      const title = document.getElementById('recipe-title').value.trim();
+      const type = document.getElementById('recipe-type').value;
+      const servings = parseInt(document.getElementById('recipe-servings').value, 10);
+      const instructions = document.getElementById('recipe-instructions').value.trim();
+
+      if (!title) { alert('Please enter a recipe title.'); return; }
+      if (!servings || servings < 1) { alert('Please enter valid servings.'); return; }
+
+      const ingredients = [];
+      document.querySelectorAll('.ingredient-row').forEach(row => {
+        const name = row.querySelector('.ing-name').value.trim();
+        const qty = parseFloat(row.querySelector('.ing-qty').value) || 0;
+        const unit = row.querySelector('.ing-unit').value.trim() || 'g';
+        if (name) {
+          ingredients.push({ name, quantity: qty, unit });
+        }
+      });
+
+      if (ingredients.length === 0) { alert('Please add at least one ingredient.'); return; }
+
+      fetch('/api/recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, type, person_count: servings, ingredients, instructions }),
+      })
+        .then(r => r.json())
+        .then(recipe => {
+          recipes.push(recipe);
+          renderRecipes();
+          clearRecipeForm();
+        });
+    }
+
+    function deleteRecipe(id) {
+      fetch('/api/recipes/' + id, { method: 'DELETE' })
+        .then(() => {
+          recipes = recipes.filter(r => r.id !== id);
+          renderRecipes();
+        });
+    }
+
+    function clearRecipeForm() {
+      document.getElementById('recipe-title').value = '';
+      document.getElementById('recipe-type').value = 'plat';
+      document.getElementById('recipe-servings').value = '4';
+      document.getElementById('recipe-instructions').value = '';
+      const container = document.getElementById('ingredients-list');
+      container.innerHTML = `
+        <div class="ingredient-row">
+          <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+          <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+          <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
+          <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
+        </div>
+      `;
+    }
+
+    function renderRecipes() {
+      const container = document.getElementById('recipes-container');
+      if (recipes.length === 0) {
+        container.innerHTML = '<div class="empty-state">No recipes yet. Add one above!</div>';
+        return;
+      }
+      container.innerHTML = recipes.map(r => `
+        <div class="recipe-card">
+          <div class="recipe-info">
+            <span class="recipe-title">${escapeHtml(r.title)}</span>
+            <span class="badge">${escapeHtml(r.type)}</span>
+            <div class="recipe-meta">
+              ${r.person_count} servings · ${r.ingredients.length} ingredients
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="deleteRecipe('${r.id}')">🗑️ Delete</button>
+        </div>
+      `).join('');
+    }
+
+    // --- Meal Planner ---
+    function renderPlanner() {
+      const container = document.getElementById('planner-days');
+      container.innerHTML = DAYS.map(day => `
+        <div class="day-plan">
+          <div class="day-plan-header">${day}</div>
+          <div class="meal-slot">
+            <label>🌞 Lunch</label>
+            <select data-day="${day}" data-meal="lunch">
+              <option value="">— Select recipe —</option>
+              ${recipes.map(r => `<option value="${r.id}">${escapeHtml(r.title)} (${escapeHtml(r.type)})</option>`).join('')}
+            </select>
+          </div>
+          <div class="meal-slot">
+            <label>🌙 Dinner</label>
+            <select data-day="${day}" data-meal="dinner">
+              <option value="">— Select recipe —</option>
+              ${recipes.map(r => `<option value="${r.id}">${escapeHtml(r.title)} (${escapeHtml(r.type)})</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function generatePlan() {
+      const personCount = parseInt(document.getElementById('plan-servings').value, 10) || 4;
+      const meals = [];
+
+      DAYS.forEach(day => {
+        const lunchSelect = document.querySelector(`select[data-day="${day}"][data-meal="lunch"]`);
+        const dinnerSelect = document.querySelector(`select[data-day="${day}"][data-meal="dinner"]`);
+
+        const lunchRecipe = recipes.find(r => r.id === lunchSelect.value);
+        const dinnerRecipe = recipes.find(r => r.id === dinnerSelect.value);
+
+        meals.push({
+          mealTime: 'lunch',
+          recettes: lunchRecipe ? [lunchRecipe] : [],
+        });
+        meals.push({
+          mealTime: 'dinner',
+          recettes: dinnerRecipe ? [dinnerRecipe] : [],
+        });
+      });
+
+      fetch('/api/meal-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ meals, personCount }),
+      })
+        .then(r => r.json())
+        .then(plan => {
+          currentPlan = { meals, personCount };
+          document.getElementById('plan-result-card').style.display = 'block';
+          document.getElementById('plan-result').innerHTML = plan.days.map(d => `
+            <div style="margin-bottom:0.5rem">
+              <strong>${escapeHtml(d.day)}</strong>:
+              Lunch: ${d.lunch.recettes.map(r => escapeHtml(r.title)).join(', ') || '—'}
+              · Dinner: ${d.dinner.recettes.map(r => escapeHtml(r.title)).join(', ') || '—'}
+            </div>
+          `).join('');
+        });
+    }
+
+    // --- Shopping List ---
+    function generateShoppingList() {
+      if (!currentPlan) {
+        alert('Please create a meal plan first (go to the Meal Plan tab).');
+        return;
+      }
+
+      fetch('/api/shopping-list/text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentPlan),
+      })
+        .then(r => r.text())
+        .then(text => {
+          document.getElementById('shopping-result').innerHTML =
+            '<div class="shopping-list">' + escapeHtml(text) + '</div>';
+        });
+    }
+
+    // --- Helpers ---
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // --- Init ---
+    fetch('/api/recipes')
+      .then(r => r.json())
+      .then(data => { recipes = data; renderRecipes(); });
+  </script>
+</body>
+</html>

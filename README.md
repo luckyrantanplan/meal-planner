@@ -42,6 +42,23 @@ npm test
 npm run lint
 ```
 
+### Web Frontend
+
+Start the web server to access the meal planning UI in your browser:
+
+```bash
+npm run build
+npm run serve
+```
+
+Then open [http://localhost:3000](http://localhost:3000). The web frontend provides:
+
+- **📖 Recipes** — Add, view, and delete recipes with ingredients
+- **📅 Meal Plan** — Assign recipes to lunch/dinner for each day of the week
+- **🛒 Shopping List** — Generate a consolidated grocery list from the current meal plan
+
+Set a custom port with the `PORT` environment variable: `PORT=8080 npm run serve`
+
 ## Usage
 
 ```typescript
@@ -93,10 +110,14 @@ src/
 ├── ingredients.ts     # Ingredient finding, parsing, and merging
 ├── recipes.ts         # Recipe parsing, scaling, and filtering
 ├── meal-plan.ts       # Weekly meal planning and shopping list generation
+├── server.ts          # Express web server with REST API
 ├── utils.test.ts      # Tests for utility functions
 ├── ingredients.test.ts # Tests for ingredient logic
 ├── recipes.test.ts    # Tests for recipe logic
-└── meal-plan.test.ts  # Tests for meal planning and shopping lists
+├── meal-plan.test.ts  # Tests for meal planning and shopping lists
+└── server.test.ts     # Tests for the web server API
+web/
+└── index.html         # Single-page web frontend
 ```
 
 ## Data Files
