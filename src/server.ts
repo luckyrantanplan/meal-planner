@@ -6,6 +6,9 @@ import { scaleRecipe, filterRecipesByType } from './recipes';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+if (isNaN(PORT)) {
+  throw new Error(`Invalid PORT value: "${process.env.PORT}". PORT must be a number.`);
+}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'web')));

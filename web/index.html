@@ -256,9 +256,9 @@
           <label>Ingredients</label>
           <div id="ingredients-list">
             <div class="ingredient-row">
-              <input type="text" placeholder="Name" class="ing-name">
-              <input type="number" placeholder="Qty" class="ing-qty" step="any">
-              <input type="text" placeholder="Unit" class="ing-unit" value="g">
+              <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+              <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+              <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
               <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
             </div>
           </div>
@@ -332,9 +332,9 @@
       const row = document.createElement('div');
       row.className = 'ingredient-row';
       row.innerHTML = `
-        <input type="text" placeholder="Name" class="ing-name">
-        <input type="number" placeholder="Qty" class="ing-qty" step="any">
-        <input type="text" placeholder="Unit" class="ing-unit" value="g">
+        <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+        <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+        <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
         <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
       `;
       container.appendChild(row);
@@ -398,9 +398,9 @@
       const container = document.getElementById('ingredients-list');
       container.innerHTML = `
         <div class="ingredient-row">
-          <input type="text" placeholder="Name" class="ing-name">
-          <input type="number" placeholder="Qty" class="ing-qty" step="any">
-          <input type="text" placeholder="Unit" class="ing-unit" value="g">
+          <input type="text" placeholder="Name" class="ing-name" aria-label="Ingredient name">
+          <input type="number" placeholder="Qty" class="ing-qty" step="any" aria-label="Ingredient quantity">
+          <input type="text" placeholder="Unit" class="ing-unit" value="g" aria-label="Ingredient unit">
           <button class="btn btn-sm btn-danger" onclick="removeIngredientRow(this)">✕</button>
         </div>
       `;
