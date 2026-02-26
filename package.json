@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/luckyrantanplan/meal-planner#readme",
   "dependencies": {
-    "express": "^4.21.2",
+    "express": "^4.22.1",
     "string-similarity": "^4.0.4"
   },
   "devDependencies": {
